@@ -1,0 +1,32 @@
+{
+  "extends": [
+    "google",
+    "plugin:jest/recommended"
+  ],
+  "plugins": [
+    "prettier",
+    "jest"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "jest": true
+  },
+  "globals": {
+    "_": true
+  },
+  "settings": {
+    "flowtype": {
+      "onlyFilesWithFlowAnnotation": true
+    }
+  },
+  "rules": {
+    "semi": [2, "never"],
+    "indent": [
+      "error", 2
+    ]
+  }
+}
