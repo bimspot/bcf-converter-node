@@ -5,7 +5,7 @@ const converter = new Converter()
 // The listener for incoming messages.
 const Listener = require('./messageQueue/listener')
 const listener = new Listener(
-  process.env.RABBIT_MQ_HOST,
+  process.env.RABBIT_MQ_URI,
   process.env.RABBIT_MQ_CHANNEL_BCF_CONVERTER,
   converter)
 listener.subscribe()

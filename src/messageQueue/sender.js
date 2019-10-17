@@ -9,15 +9,15 @@ class Sender {
    * Instantiates and returns a instance of the Sender class.
    * The queue for the outgoing messages is specified upon creation.
    *
-   * @param {String} host The host of the message queue installation.
+   * @param {String} uri The uri of the message queue installation.
    * @param {String} queue The queue for the outgoing messages.
    * @param {Context} context The context of this task.
    * @param {String} context.projectId The id of the project.
    * @param {String} context.role The role within the project.
    * @param {String} context.ifcProjectId The identifier of the IfcProject
    */
-  constructor(host, queue, context) {
-    this.host = host
+  constructor(uri, queue, context) {
+    this.uri = uri
     this.queue = queue
     this.context = context
   }
@@ -43,7 +43,7 @@ class Sender {
     const json = JSON.stringify(message)
 
     // Sending message to RabbitMQ
-    amqp.connect(`amqp://${self.host}`, (error, connection) => {
+    amqp.connect(self.uri, (error, connection) => {
       if (error) {
         console.warn(error)
         return
@@ -78,7 +78,7 @@ class Sender {
     const json = JSON.stringify(message)
 
     // Sending message to RabbitMQ
-    amqp.connect(`amqp://${self.host}`, (error, connection) => {
+    amqp.connect(self.uri, (error, connection) => {
       if (error) {
         console.warn(error)
         return

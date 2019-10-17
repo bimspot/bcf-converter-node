@@ -11,13 +11,13 @@ class Listener {
   * When a message is received, it is passes the conversion task to the
   * inejcted `Worker`.
   *
-  * @param {String} host The host of the message queue installation.
+  * @param {String} uri The uri of the message queue installation.
   * @param {String} queue The queue for the incoming messages.
   * @param {Worker} worker The worker to be used with this listener when task
   * is received.
   */
-  constructor(host, queue, worker) {
-    this.host = host
+  constructor(uri, queue, worker) {
+    this.uri = uri
     this.queue = queue
     this.worker = worker
   }
@@ -35,7 +35,7 @@ class Listener {
   subscribe() {
     const self = this
     console.log(`Connecting to queue ${self.queue}`)
-    amqp.connect(`amqp://${self.host}`, (error, connection) => {
+    amqp.connect(self.uri, (error, connection) => {
       if (error) {
         console.warn(error)
         setTimeout(function() {
