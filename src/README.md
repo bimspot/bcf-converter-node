@@ -1,1 +1,1 @@
-# BIMSPOT Model Converter
+# BIMSPOT BCF Converter

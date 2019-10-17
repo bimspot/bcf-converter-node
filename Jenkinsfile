@@ -1,5 +1,5 @@
 // The name of the service
-def service = 'model-converter'
+def service = 'bcf-converter'
 
 // The name of the current branch
 def branch = env.BRANCH_NAME.replaceAll("[^a-zA-Z0-9 ]+", "-")
