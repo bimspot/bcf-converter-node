@@ -28,6 +28,12 @@ class Converter {
    * @memberof Converter
    */
   async performWork(message, completion) {
+    // Exchange for reporting status
+    const sender = new Sender(
+      rabbitmqHost,
+      rabbitmqChannel,
+      message.context)
+
     let bcfPath
     let jsonPath = `/data/IFC/${message.context.projectId}/` +
       `${message.context.role}/${message.context.ifcProjectId}/BCF/`
@@ -44,6 +50,12 @@ class Converter {
       jsonPath += `${filename}.json`
     } catch (e) {
       completion(e)
+      message.task.error = {
+        error: error,
+        message: error.message,
+      }
+      sender.sendTo(rabbitmqStatusTopic, message)
+      return
     }
 
     // Executing the converter
@@ -54,20 +66,20 @@ class Converter {
           console.log('Program output:', stdout)
           console.log('Conversion complete:', message.uuid)
 
-          // Removing temp file.
+          // Removing the temporary file.
           fs.unlinkSync(bcfPath)
 
           const error = (stderr.length > 0) ? stderr : undefined
 
           if (error !== undefined) {
             completion(error)
+            message.task.error = {
+              error: error,
+              message: error.message,
+            }
+            sender.sendTo(rabbitmqStatusTopic, message)
             return
           }
-
-          const sender = new Sender(
-            rabbitmqHost,
-            rabbitmqChannel,
-            message.context)
 
           message.artifacts = [
             {
@@ -76,9 +88,7 @@ class Converter {
               storage: 'file',
             },
           ]
-
           sender.sendTo(rabbitmqStatusTopic, message)
-
           completion()
         })
   }
@@ -99,14 +109,11 @@ class Converter {
         Bucket: bucket,
         Key: key,
       }
-      console.log(params)
       const s3 = new AWS.S3()
       s3.getObject(params, (error, data) => {
         if (error) {
-          console.error(error)
           return reject(error)
         }
-        console.log(data)
         fs.writeFileSync(filePath, data.Body)
         resolve(filePath)
       })
