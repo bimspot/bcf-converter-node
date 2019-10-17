@@ -1,6 +1,9 @@
 const shell = require('shelljs')
+const os = require('os')
+const fs = require('fs')
 const Sender = require('../messageQueue/sender')
-const rabbitmqHost = process.env.RABBIT_MQ_HOST
+const AWS = require('aws-sdk')
+const rabbitmqHost = process.env.RABBIT_MQ_URI
 const rabbitmqChannel = process.env.RABBIT_MQ_CHANNEL
 const rabbitmqStatusTopic = process.env.RABBIT_MQ_STATUS_TOPIC
 
@@ -24,14 +27,21 @@ class Converter {
    * operation finishes. An error is passed if the operation fails.
    * @memberof Converter
    */
-  performWork(message, completion) {
+  async performWork(message, completion) {
     let bcfPath
-    let jsonPath
+    let jsonPath = `/data/IFC/${message.context.projectId}/` +
+      `${message.context.role}/${message.context.ifcProjectId}/BCF/`
 
     try {
-      bcfPath = message.task.input.files['1'].path
+      // s3://bimspot-modelchecker/bcf/bcfzip/{projectId}/{uuid}.bcfzip
+      const bcfS3Path = message.task.input.bcfs['1'].path
+      const regex = /s3:\/\/(\S[^/]*)\/(.*)$/i
+      // eslint-disable-next-line no-unused-vars
+      const [array, bucket, key] = bcfS3Path.match(regex)
+      bcfPath = await this.downloadBcfzip(bucket, key)
+
       const filename = bcfPath.split('/').pop().split('.')[0]
-      jsonPath = `${message.task.output.path}/${filename}.json`
+      jsonPath += `${filename}.json`
     } catch (e) {
       completion(e)
     }
@@ -44,12 +54,16 @@ class Converter {
           console.log('Program output:', stdout)
           console.log('Conversion complete:', message.uuid)
 
+          // Removing temp file.
+          fs.unlinkSync(bcfPath)
+
           const error = (stderr.length > 0) ? stderr : undefined
 
           if (error !== undefined) {
             completion(error)
             return
           }
+
           const sender = new Sender(
             rabbitmqHost,
             rabbitmqChannel,
@@ -67,6 +81,36 @@ class Converter {
 
           completion()
         })
+  }
+
+  /**
+   * Downloads a file from the specified S3 bucket and returns the temporary
+   * path for it.
+   *
+   * @param {String} bucket The S3 bucket where the file is stored.
+   * @param {String} key The key of the object at s3.
+   * @return {String} Returns the path to the downloaded file.
+   * @memberof Converter
+   */
+  async downloadBcfzip(bucket, key) {
+    const filePath = `${os.tmpdir()}/${key.split('/').pop()}`
+    return new Promise((resolve, reject) => {
+      const params = {
+        Bucket: bucket,
+        Key: key,
+      }
+      console.log(params)
+      const s3 = new AWS.S3()
+      s3.getObject(params, (error, data) => {
+        if (error) {
+          console.error(error)
+          return reject(error)
+        }
+        console.log(data)
+        fs.writeFileSync(filePath, data.Body)
+        resolve(filePath)
+      })
+    })
   }
 }
 
