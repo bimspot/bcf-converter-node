@@ -25,8 +25,16 @@ class Converter {
    * @memberof Converter
    */
   performWork(message, completion) {
-    const bcfPath = 'sample.bcfzip'
-    const jsonPath = 'sample.json'
+    let bcfPath
+    let jsonPath
+
+    try {
+      bcfPath = message.task.input.files['1'].path
+      const filename = bcfPath.split('/').pop().split('.')[0]
+      jsonPath = `${message.task.output.path}/${filename}.json`
+    } catch (e) {
+      completion(e)
+    }
 
     // Executing the converter
     shell
@@ -34,7 +42,7 @@ class Converter {
         (code, stdout, stderr) => {
           console.log('Exit code:', code)
           console.log('Program output:', stdout)
-          // console.log('Conversion complete:', message.uuid)
+          console.log('Conversion complete:', message.uuid)
 
           const error = (stderr.length > 0) ? stderr : undefined
 
