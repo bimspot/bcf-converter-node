@@ -4,8 +4,9 @@ const fs = require('fs')
 const Sender = require('../messageQueue/sender')
 const AWS = require('aws-sdk')
 const rabbitmqHost = process.env.RABBIT_MQ_URI
-const rabbitmqChannel = process.env.RABBIT_MQ_CHANNEL
+const rabbitmqChannel = process.env.RABBIT_MQ_CHANNEL_BCF_CONVERTER
 const rabbitmqStatusTopic = process.env.RABBIT_MQ_STATUS_TOPIC
+const rabbitmqBcfImportChannel = process.env.RABBIT_MQ_CHANNEL_BCF_IMPORT
 
 /**
  * The converter runs the bash script in `convert.sh` which outputs the
@@ -28,6 +29,7 @@ class Converter {
    * @memberof Converter
    */
   async performWork(message, completion) {
+    const self = this
     // Exchange for reporting status
     const sender = new Sender(
       rabbitmqHost,
@@ -44,7 +46,7 @@ class Converter {
       const regex = /s3:\/\/(\S[^/]*)\/(.*)$/i
       // eslint-disable-next-line no-unused-vars
       const [array, bucket, key] = bcfS3Path.match(regex)
-      bcfPath = await this.downloadBcfzip(bucket, key)
+      bcfPath = await self.downloadBcfzip(bucket, key)
 
       const filename = bcfPath.split('/').pop().split('.')[0]
       jsonPath += `${filename}.json`
@@ -89,6 +91,20 @@ class Converter {
             },
           ]
           sender.sendTo(rabbitmqStatusTopic, message)
+
+          // Forwarding the message to the collab service for importing it.
+          // The metadata is used to describe the type, that is bcfjson.
+          // We also need to send along the metadata of the original bcfzip.
+          const original = message.task.input.bcfs['1'].metadata || {}
+          const type = {type: 'bcfjson'}
+          const metadata = Object.assign(original, type)
+
+          message.task.input.bcfs['2'] = {
+            path: jsonPath,
+            metadata: metadata,
+          }
+          self.invokeBcfImport(message)
+
           completion()
         })
   }
@@ -118,6 +134,20 @@ class Converter {
         resolve(filePath)
       })
     })
+  }
+
+  /**
+   *
+   *
+   * @param {*} message
+   * @memberof Converter
+   */
+  invokeBcfImport(message) {
+    const sender = new Sender(
+      rabbitmqHost,
+      rabbitmqBcfImportChannel,
+      message.context)
+    sender.send(message)
   }
 }
 
