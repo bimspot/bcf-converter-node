@@ -90,7 +90,7 @@ class Sender {
           return
         }
         const q = self.queue
-        channel.assertExchange(topic, 'topic', {durable: false})
+        channel.assertExchange(topic, 'topic', {durable: true})
         channel.publish(topic, q, Buffer.from(json))
         console.log(`Sent message '${json}' to topic '${topic}', key '${q}'`)
       })
