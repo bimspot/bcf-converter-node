@@ -4,9 +4,9 @@ const fs = require('fs')
 const Sender = require('../messageQueue/sender')
 const AWS = require('aws-sdk')
 const rabbitmqHost = process.env.RABBIT_MQ_URI
-const rabbitmqChannel = process.env.RABBIT_MQ_CHANNEL_BCF_CONVERTER
+const rabbitmqChannel = process.env.RABBIT_MQ_QUEUE_BCF_CONVERTER
 const rabbitmqStatusTopic = process.env.RABBIT_MQ_STATUS_TOPIC
-const rabbitmqBcfImportChannel = process.env.RABBIT_MQ_CHANNEL_BCF_IMPORT
+const rabbitmqBcfImportChannel = process.env.RABBIT_MQ_QUEUE_BCF_IMPORT
 
 /**
  * The converter runs the bash script in `convert.sh` which outputs the

@@ -6,6 +6,6 @@ const converter = new Converter()
 const Listener = require('./messageQueue/listener')
 const listener = new Listener(
   process.env.RABBIT_MQ_URI,
-  process.env.RABBIT_MQ_CHANNEL_BCF_CONVERTER,
+  process.env.RABBIT_MQ_QUEUE_BCF_CONVERTER,
   converter)
 listener.subscribe()
