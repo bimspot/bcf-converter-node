@@ -3,7 +3,7 @@
 BCF_PATH=$1
 JSON_PATH=$2
 
-echo "Model converter started"
+echo "BCF converter started"
 echo "BCF Path: $BCF_PATH"
 echo "Output JSON: $JSON_PATH"
 

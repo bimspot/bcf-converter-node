@@ -97,7 +97,7 @@ class Converter {
           // We also need to send along the metadata of the original bcfzip.
           const original = message.task.input.bcfs['1'].metadata || {}
           const type = {type: 'bcfjson'}
-          const metadata = Object.assign(original, type)
+          const metadata = Object.assign({}, original, type)
 
           message.task.input.bcfs['2'] = {
             path: jsonPath,

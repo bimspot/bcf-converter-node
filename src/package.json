@@ -1,5 +1,5 @@
 {
-  "name": "model-converter",
+  "name": "bcf-converter",
   "version": "0.0.1",
   "description": "Converting ifc files to dae, glTF, xml and json ",
   "main": "index.js",
