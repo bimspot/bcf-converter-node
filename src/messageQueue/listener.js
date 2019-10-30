@@ -57,6 +57,8 @@ class Listener {
 
         channel.consume(self.queue, (message) => {
           const json = JSON.parse(message.content.toString())
+          console.log(' [*] Received message %s.', message.content.toString())
+
           self.worker.performWork(json, (error) => {
             const success = (error === undefined)
 
