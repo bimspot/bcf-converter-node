@@ -72,7 +72,7 @@ class Sender {
   * @param {JSON} message The message to be sent.
   * @memberof Sender
   */
-  sendTo(topic, message) {
+  sendTo(topic, routingKey, message) {
     const self = this
     message.context = this.context
     const json = JSON.stringify(message)
@@ -91,8 +91,8 @@ class Sender {
         }
         const q = self.queue
         channel.assertExchange(topic, 'topic', {durable: true})
-        channel.publish(topic, q, Buffer.from(json))
-        console.log(`Sent message '${json}' to topic '${topic}', key '${q}'`)
+        channel.publish(topic, routingKey, Buffer.from(json))
+        console.log(`Sent message '${json}' to topic '${topic}', key '${routingKey}'`)
       })
       setTimeout(function() {
         connection.close()

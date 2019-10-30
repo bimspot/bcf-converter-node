@@ -17,6 +17,24 @@ const rabbitmqBcfImportChannel = process.env.RABBIT_MQ_QUEUE_BCF_IMPORT
  * @class Converter
  */
 class Converter {
+
+  failedCallback(message, error){
+    try{
+      if (error !== undefined) {
+        message.task.error = {
+          error: error,
+          message: error.message,
+        }
+        sender.sendTo(
+          rabbitmqStatusTopic, 
+          rabbitmqChannel + '.error',
+          message)
+      }
+    }catch(e){
+      console.log('Error during failed callback:', code)
+    }
+  }
+
   /**
    * The converter runs the bash script in `convert.sh` which outputs the
    * different formats from the input IFC file.
@@ -52,11 +70,7 @@ class Converter {
       jsonPath += `${filename}.json`
     } catch (e) {
       completion(e)
-      message.task.error = {
-        error: error,
-        message: error.message,
-      }
-      sender.sendTo(rabbitmqStatusTopic, message)
+      this.failedCallback(message, e)
       return
     }
 
@@ -75,11 +89,7 @@ class Converter {
 
           if (error !== undefined) {
             completion(error)
-            message.task.error = {
-              error: error,
-              message: error.message,
-            }
-            sender.sendTo(rabbitmqStatusTopic, message)
+            this.failedCallback(message, error)
             return
           }
 
@@ -90,7 +100,9 @@ class Converter {
               storage: 'file',
             },
           ]
-          sender.sendTo(rabbitmqStatusTopic, message)
+          sender.sendTo(rabbitmqStatusTopic, 
+            rabbitmqChannel + '.success',
+            message)
 
           // Forwarding the message to the collab service for importing it.
           // The metadata is used to describe the type, that is bcfjson.
