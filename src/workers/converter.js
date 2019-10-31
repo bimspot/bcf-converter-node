@@ -18,10 +18,10 @@ const rabbitmqBcfImportChannel = process.env.RABBIT_MQ_QUEUE_BCF_IMPORT
  */
 class Converter {
   /**
-   *
-   * @param {Sender} sender
-   * @param {*} message
-   * @param {*} error
+   * Method for sending the error message back to the status topic.
+   * @param {Sender} sender The mq Sender instance
+   * @param {Object} message The message to be sent.
+   * @param {Error} error The error message to be sent.
    * @memberof Converter
    */
   failedCallback(sender, message, error) {
