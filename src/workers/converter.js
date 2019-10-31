@@ -17,20 +17,26 @@ const rabbitmqBcfImportChannel = process.env.RABBIT_MQ_QUEUE_BCF_IMPORT
  * @class Converter
  */
 class Converter {
-
-  failedCallback(message, error){
-    try{
+  /**
+   * Method for sending the error message back to the status topic.
+   * @param {Sender} sender The mq Sender instance
+   * @param {Object} message The message to be sent.
+   * @param {Error} error The error message to be sent.
+   * @memberof Converter
+   */
+  failedCallback(sender, message, error) {
+    try {
       if (error !== undefined) {
         message.task.error = {
           error: error,
           message: error.message,
         }
         sender.sendTo(
-          rabbitmqStatusTopic, 
+          rabbitmqStatusTopic,
           rabbitmqChannel + '.error',
           message)
       }
-    }catch(e){
+    } catch (e) {
       console.log('Error during failed callback:', code)
     }
   }
@@ -70,7 +76,7 @@ class Converter {
       jsonPath += `${filename}.json`
     } catch (e) {
       completion(e)
-      this.failedCallback(message, e)
+      this.failedCallback(sender, message, e)
       return
     }
 
@@ -89,7 +95,7 @@ class Converter {
 
           if (error !== undefined) {
             completion(error)
-            this.failedCallback(message, error)
+            this.failedCallback(sender, message, error)
             return
           }
 
@@ -100,7 +106,8 @@ class Converter {
               storage: 'file',
             },
           ]
-          sender.sendTo(rabbitmqStatusTopic, 
+          sender.sendTo(
+            rabbitmqStatusTopic,
             rabbitmqChannel + '.success',
             message)
 
