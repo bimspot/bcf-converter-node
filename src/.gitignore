@@ -1,0 +1,12 @@
+.settings
+.config
+.ash_history
+.bash_history
+package-lock.json
+node_modules
+yarn.lock
+junit.xml
+docs
+artifacts
+.env
+.idea

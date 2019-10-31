@@ -66,20 +66,20 @@ pipeline {
       }
     }
 
-    // Generating documentation and making it available on docs.bimspot.io
-    // Only run for development branch
-    stage('Documentation') {
-      when {
-        expression {
-          env.BRANCH_NAME == 'develop'
-        }
-      }
-      steps {
-        sh "docker exec ${containerName} jsdoc --configure .jsdoc.json"
-        // TODO:
-        sh "docker cp ${containerName}:docs ."
-      }
-    }
+    // // Generating documentation and making it available on docs.bimspot.io
+    // // Only run for development branch
+    // stage('Documentation') {
+    //   when {
+    //     expression {
+    //       env.BRANCH_NAME == 'develop'
+    //     }
+    //   }
+    //   steps {
+    //     sh "docker exec ${containerName} jsdoc --configure .jsdoc.json"
+    //     // TODO:
+    //     sh "docker cp ${containerName}:docs ."
+    //   }
+    // }
 
     // The production image is built here.
     stage('Build: deploy') {
