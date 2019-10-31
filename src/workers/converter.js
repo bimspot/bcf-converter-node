@@ -82,7 +82,7 @@ class Converter {
 
     // Executing the converter
     shell
-      .exec(`sh convert.sh ${bcfPath} ${jsonPath}`,
+      .exec(`sh convert.sh "${bcfPath}" "${jsonPath}"`,
         (code, stdout, stderr) => {
           console.log('Exit code:', code)
           console.log('Program output:', stdout)
